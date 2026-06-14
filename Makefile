@@ -107,7 +107,6 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
 CFILES		:=	$(patsubst $(SOURCE)/%, %, $(call rwildcard, $(SOURCE), *.c))
 CPPFILES	:=	$(patsubst $(SOURCE)/%, %, $(call rwildcard, $(SOURCE), *.cpp))
-CPPFILES	:= $(filter-out system/fake_pthread.cpp, $(CPPFILES))
 SFILES		:=	$(patsubst $(SOURCE)/%, %, $(call rwildcard, $(SOURCE), *.s))
 PICAFILES	:=	$(patsubst $(SOURCE)/%, %, $(call rwildcard, $(SOURCE), *.v.pica))
 SHLISTFILES	:=	$(patsubst $(SOURCE)/%, %, $(call rwildcard, $(SOURCE), *.shlist))
