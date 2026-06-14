@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v4
     
     # 1. Build the main production app
-     Wilkinson- name: Build Main App
+    - name: Build Main App
       run: make
       
     - name: Rename Main CIA file
