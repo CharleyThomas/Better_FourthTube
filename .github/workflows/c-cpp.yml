@@ -23,11 +23,10 @@ jobs:
         make clean
         make
     
-    # The Makefile outputs 'Better_FourthTube.3dsx' because of the repository name!
+    # Save main app files securely before clearing the workspace
     - name: Save Main App Files
       run: |
         cp FourthTube.cia Better_FourthTube.cia
-        # It's already named Better_FourthTube.3dsx, so we just keep it safe
         cp Better_FourthTube.3dsx main_app_backup.3dsx
 
     # Clean the intermediate object files safely
@@ -42,7 +41,8 @@ jobs:
         make clean
         make
         mv FourthTube.cia test.cia
-        mv Better_FourthTube.3dsx test.3dsx
+        # We delete the test 3dsx file so it doesn't get exported
+        rm -f Better_FourthTube.3dsx
         rm source/main.cpp
         mv main_bak.cpp source/main.cpp
       continue-on-error: true
@@ -59,7 +59,6 @@ jobs:
           Better_FourthTube.cia
           Better_FourthTube.3dsx
           test.cia
-          test.3dsx
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -73,4 +72,3 @@ jobs:
           Better_FourthTube.cia
           Better_FourthTube.3dsx
           test.cia
-          test.3dsx
