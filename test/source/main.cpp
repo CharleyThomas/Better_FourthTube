@@ -1,8 +1,15 @@
-#include <3ds.h>
+#include "headers.hpp"
 
 int main() {
-    gfxInitDefault();
-    // Future test UI code goes here!
-    gfxExit();
-    return 0;
+	Menu_init();
+
+	// Main loop
+	while (aptMainLoop()) {
+		if (!Menu_main()) {
+			break;
+		}
+	}
+
+	Menu_exit();
+	return 0;
 }
