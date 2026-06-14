@@ -8,9 +8,12 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     container: devkitpro/devkitarm
+    
+    # This block gives the action permission to upload files to your Releases page
+    permissions:
+      contents: write
 
     steps:
     - uses: actions/checkout@v4
