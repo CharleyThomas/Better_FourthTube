@@ -23,8 +23,8 @@ jobs:
       with:
         name: Build
         path: |
-          FourthTube.3dsx
-          FourthTube.cia
+          *.3dsx
+          *.cia
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -35,5 +35,5 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          FourthTube.3dsx
-          FourthTube.cia
+          *.3dsx
+          *.cia
