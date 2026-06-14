@@ -18,13 +18,18 @@ jobs:
     - uses: actions/checkout@v4
     - name: make
       run: make
+      
+    # This step renames the CIA file before uploading
+    - name: Rename CIA file
+      run: mv FourthTube.cia Better_FourthTube.cia
+
     - name: Upload binary
       uses: actions/upload-artifact@v4
       with:
         name: Build
         path: |
           Better_FourthTube.3dsx
-          FourthTube.cia
+          Better_FourthTube.cia
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -36,4 +41,4 @@ jobs:
         prerelease: false
         files: |
           Better_FourthTube.3dsx
-          FourthTube.cia
+          Better_FourthTube.cia
