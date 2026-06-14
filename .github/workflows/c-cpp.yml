@@ -23,10 +23,10 @@ jobs:
         make clean
         make
     
+    # Only copy the CIA file since 3dsx isn't targets by the Makefile
     - name: Save Main App Files
       run: |
         cp FourthTube.cia Better_FourthTube.cia
-        cp FourthTube.3dsx Better_FourthTube.3dsx
 
     # 2. Build the Sandbox safely by swapping just the main file
     - name: Build Test Sandbox
@@ -36,7 +36,6 @@ jobs:
         make clean
         make
         mv FourthTube.cia test.cia
-        mv FourthTube.3dsx test.3dsx
         rm source/main.cpp
         mv main_bak.cpp source/main.cpp
       continue-on-error: true
@@ -46,9 +45,7 @@ jobs:
       with:
         name: Build
         path: |
-          Better_FourthTube.3dsx
           Better_FourthTube.cia
-          test.3dsx
           test.cia
 
     - name: Create GitHub Release
@@ -60,7 +57,5 @@ jobs:
         draft: false
         prerelease: false
         files: |
-          Better_FourthTube.3dsx
           Better_FourthTube.cia
-          test.3dsx
           test.cia
