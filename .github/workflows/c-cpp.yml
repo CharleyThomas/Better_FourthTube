@@ -23,11 +23,12 @@ jobs:
         make clean
         make
     
-    # Save BOTH main app files securely before clearing the workspace
+    # The Makefile outputs 'Better_FourthTube.3dsx' because of the repository name!
     - name: Save Main App Files
       run: |
         cp FourthTube.cia Better_FourthTube.cia
-        cp FourthTube.3dsx Better_FourthTube.3dsx
+        # It's already named Better_FourthTube.3dsx, so we just keep it safe
+        cp Better_FourthTube.3dsx main_app_backup.3dsx
 
     # Clean the intermediate object files safely
     - name: Clean Build Space
@@ -41,10 +42,14 @@ jobs:
         make clean
         make
         mv FourthTube.cia test.cia
-        mv FourthTube.3dsx test.3dsx
+        mv Better_FourthTube.3dsx test.3dsx
         rm source/main.cpp
         mv main_bak.cpp source/main.cpp
       continue-on-error: true
+
+    # Restore the backup name for uploading
+    - name: Restore Main App 3dsx Name
+      run: mv main_app_backup.3dsx Better_FourthTube.3dsx
 
     - name: Upload binary
       uses: actions/upload-artifact@v4
