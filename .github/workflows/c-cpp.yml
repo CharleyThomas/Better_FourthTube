@@ -17,16 +17,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # 1. Always build the main stable app first
+    # 1. Build the main production app
     - name: Build Main App
       run: |
         make clean
         make
     
-    # Only copy the CIA file since 3dsx isn't targets by the Makefile
+    # Save BOTH main app files securely before clearing the workspace
     - name: Save Main App Files
       run: |
         cp FourthTube.cia Better_FourthTube.cia
+        cp FourthTube.3dsx Better_FourthTube.3dsx
+
+    # Clean the intermediate object files safely
+    - name: Clean Build Space
+      run: make clean
 
     # 2. Build the Sandbox safely by swapping just the main file
     - name: Build Test Sandbox
@@ -36,6 +41,7 @@ jobs:
         make clean
         make
         mv FourthTube.cia test.cia
+        mv FourthTube.3dsx test.3dsx
         rm source/main.cpp
         mv main_bak.cpp source/main.cpp
       continue-on-error: true
@@ -46,7 +52,9 @@ jobs:
         name: Build
         path: |
           Better_FourthTube.cia
+          Better_FourthTube.3dsx
           test.cia
+          test.3dsx
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
@@ -58,4 +66,6 @@ jobs:
         prerelease: false
         files: |
           Better_FourthTube.cia
+          Better_FourthTube.3dsx
           test.cia
+          test.3dsx
