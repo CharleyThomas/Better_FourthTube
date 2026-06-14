@@ -1,6 +1,6 @@
 # FourthTube  
 
-A work-in-progress homebrew YouTube client for the 3DS  
+A work-in-progress homebrew YouTube client for the 3DS.  
 
 [GBAtemp Thread](https://gbatemp.net/threads/fourthtube-for-now-a-fork-of-thirdtube-that-works.660775/)
 
