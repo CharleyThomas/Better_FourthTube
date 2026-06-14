@@ -29,14 +29,11 @@
 
 #define COLOR_LINK 0xFFCB6600
 
-// YouTube Dark Mode Text (Pure White and Light Grays)
-#define DEFAULT_TEXT_COLOR COLOR_GRAY(0xFF)
-#define LIGHT0_TEXT_COLOR COLOR_GRAY(0xF1)
-#define LIGHT1_TEXT_COLOR COLOR_GRAY(0xAA)
-
-// YouTube Dark Mode Layout Colors
-#define DEFAULT_BACK_COLOR COLOR_GRAY(0x0F) // YouTube Main App Background (#0F0F0F)
-#define LIGHT0_BACK_COLOR  COLOR_GRAY(0x21) // YouTube Menu Bars / Search Bar (#212121)
-#define LIGHT1_BACK_COLOR  COLOR_GRAY(0x27) // Lighter accents / active button states (#272727)
-#define LIGHT2_BACK_COLOR  COLOR_GRAY(0x3E) // Borders and separation lines
-#define LIGHT3_BACK_COLOR  COLOR_GRAY(0x60) // High-contrast headers
+#define DEFAULT_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xFF) : COLOR_GRAY(0x00))
+#define LIGHT0_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xCC) : COLOR_GRAY(0x33))
+#define LIGHT1_TEXT_COLOR (var_night_mode ? COLOR_GRAY(0xA0) : COLOR_GRAY(0x77))
+#define DEFAULT_BACK_COLOR (var_night_mode ? COLOR_GRAY(0x00) : COLOR_GRAY(0xFF))
+#define LIGHT0_BACK_COLOR (var_night_mode ? COLOR_GRAY(0x22) : COLOR_GRAY(0xDD))
+#define LIGHT1_BACK_COLOR (var_night_mode ? COLOR_GRAY(0x50) : COLOR_GRAY(0xAA))
+#define LIGHT2_BACK_COLOR (var_night_mode ? COLOR_GRAY(0x70) : COLOR_GRAY(0x77))
+#define LIGHT3_BACK_COLOR (var_night_mode ? COLOR_GRAY(0xA0) : COLOR_GRAY(0x33))
