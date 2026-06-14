@@ -17,27 +17,28 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # 1. Build the main production app
+    # 1. Always build the main stable app first
     - name: Build Main App
-      run: make
-      
-    - name: Rename Main CIA file
-      run: mv FourthTube.cia Better_FourthTube.cia
+      run: |
+        make clean
+        make
+    
+    - name: Save Main App Files
+      run: |
+        cp FourthTube.cia Better_FourthTube.cia
+        cp FourthTube.3dsx Better_FourthTube.3dsx
 
-    # Clean the build files so they don't mix
-    - name: Clean Build Space
-      run: make clean
-
-    # 2. Swap the source folders and build the Test Sandbox
+    # 2. Build the Sandbox safely by swapping just the main file
     - name: Build Test Sandbox
       run: |
-        mv source source_bak
-        mv test/source source
+        mv source/main.cpp main_bak.cpp
+        cp test/source/main.cpp source/main.cpp
+        make clean
         make
         mv FourthTube.cia test.cia
         mv FourthTube.3dsx test.3dsx
-        mv source test/source
-        mv source_bak source
+        rm source/main.cpp
+        mv main_bak.cpp source/main.cpp
       continue-on-error: true
 
     - name: Upload binary
