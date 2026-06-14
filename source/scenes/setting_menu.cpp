@@ -2,7 +2,7 @@
 #include "headers.hpp"
 #include <functional>
 #include <regex>
-
+#include <sstream>
 #include "data_io/settings.hpp"
 #include "data_io/history.hpp"
 #include "util/misc_tasks.hpp"
