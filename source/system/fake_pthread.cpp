@@ -35,6 +35,7 @@ void Util_fake_pthread_set_enabled_core(bool enabled_core[4]) {
 	util_fake_pthread_core_offset = 0;
 }
 
+/*
 int pthread_mutex_lock(pthread_mutex_t *mutex) {
 	LightLock_Lock(&mutex->normal);
 	return 0;
@@ -180,3 +181,4 @@ long sysconf(int name) {
 		return -1;
 	}
 }
+*/
