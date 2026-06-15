@@ -17,21 +17,25 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # 1. Check if the commit message says "release: vX.X.X"
+    # 1. Check if the commit message starts with "release: v"
     - name: Check for Release Trigger
       id: check_release
       run: |
         COMMIT_MSG="${{ github.event.head_commit.message }}"
-        # This looks for "release: v" followed by numbers/dots
-        if [[ "$COMMIT_MSG" =~ release:\ (v[0-9]+\.[0-9]+\.[0-9]+) ]]; then
-          VERSION="${BASH_REMATCH[1]}"
-          echo "should_release=true" >> $GITHUB_OUTPUT
-          echo "rel_version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Triggering release for version: $VERSION"
-        else
-          echo "should_release=false" >> $GITHUB_OUTPUT
-          echo "Normal commit. Skipping public release step."
-        fi
+        
+        case "$COMMIT_MSG" in
+          "release: v"*)
+            # Extract just the version number (everything after "release: ")
+            VERSION=$(echo "$COMMIT_MSG" | sed 's/release: //')
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "rel_version=$VERSION" >> $GITHUB_OUTPUT
+            echo "Triggering release for version: $VERSION"
+            ;;
+          *)
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "Normal commit. Skipping public release step."
+            ;;
+        esac
 
     # 2. Build the main production app
     - name: Build Main App
