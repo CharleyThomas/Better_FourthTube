@@ -17,7 +17,24 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # 1. Build the main production app
+    # 1. Parse the release log to see if we need to release
+    - name: Parse Release Log
+      id: log_parser
+      run: |
+        VERSION=$(sed -n '/\[VERSION\]/,/\[\/VERSION\]/p' release_log.md | grep -v '\[.*\]' | xargs)
+        TITLE=$(sed -n '/\[TITLE\]/,/\[\/TITLE\]/p' release_log.md | grep -v '\[.*\]' | xargs)
+        
+        if [ -n "$VERSION" ] && [ "$VERSION" != "none" ] && [ "$VERSION" != "" ]; then
+          echo "should_release=true" >> $GITHUB_OUTPUT
+          echo "rel_version=$VERSION" >> $GITHUB_OUTPUT
+          echo "rel_title=$TITLE" >> $GITHUB_OUTPUT
+          echo "Triggering release: $VERSION - $TITLE"
+        else
+          echo "should_release=false" >> $GITHUB_OUTPUT
+          echo "No release version specified in release_log.md. Skipping release step."
+        fi
+
+    # 2. Build the main production app
     - name: Build Main App
       run: |
         make clean
@@ -33,7 +50,7 @@ jobs:
     - name: Clean Build Space
       run: make clean
 
-    # 2. Build the Sandbox safely by swapping just the main file
+    # 3. Build the Sandbox safely by swapping just the main file
     - name: Build Test Sandbox
       run: |
         mv source/main.cpp main_bak.cpp
@@ -41,7 +58,6 @@ jobs:
         make clean
         make
         mv FourthTube.cia test.cia
-        # We delete the test 3dsx file so it doesn't get exported
         rm -f Better_FourthTube.3dsx
         rm source/main.cpp
         mv main_bak.cpp source/main.cpp
@@ -51,23 +67,25 @@ jobs:
     - name: Restore Main App 3dsx Name
       run: mv main_app_backup.3dsx Better_FourthTube.3dsx
 
-    - name: Upload binary
+    # 4. Upload binary as an artifact (Available on every single commit!)
+    - name: Upload Build Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: Build
+        name: Build-${{ github.run_number }}
         path: |
           Better_FourthTube.cia
           Better_FourthTube.3dsx
           test.cia
 
+    # 5. Create GitHub Pre-Release (Only if release_log.md has a version set)
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.log_parser.outputs.should_release == 'true'
       with:
-        tag_name: v1.0.${{ github.run_number }}
-        name: Latest Release #${{ github.run_number }}
+        tag_name: ${{ steps.log_parser.outputs.rel_version }}
+        name: "${{ steps.log_parser.outputs.rel_title }}"
         draft: false
-        prerelease: false
+        prerelease: true # This forces the orange "Pre-release" label!
         files: |
           Better_FourthTube.cia
           Better_FourthTube.3dsx
