@@ -16,40 +16,45 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    
-    # 1. Parse the single-line layout from the BOTTOM of release_log.md
+      with:
+        fetch-depth: 2 # Allows git to see the previous commit for comparison
+
+    # 1. Check if release_log.md was changed, THEN parse the bottom line
     - name: Parse Release Log
       id: log_parser
       run: |
-        LAST_LINE=$(tail -n 1 release_log.md | xargs)
-        
-        # Check if it starts with [official] or [dev]
-        case "$LAST_LINE" in
-          "[official]"*|"[dev]"*)
-            # Extract the type (official or dev)
-            TYPE=$(echo "$LAST_LINE" | cut -d'-' -f1 | tr -d '[]' | xargs)
-            # Extract the version (vXX.X.X)
-            VERSION=$(echo "$LAST_LINE" | cut -d'-' -f2 | xargs)
-            # Extract the title
-            TITLE=$(echo "$LAST_LINE" | cut -d'-' -f3- | xargs)
-            
-            echo "should_release=true" >> $GITHUB_OUTPUT
-            echo "rel_version=$VERSION" >> $GITHUB_OUTPUT
-            echo "rel_title=$TITLE" >> $GITHUB_OUTPUT
-            
-            if [ "$TYPE" = "dev" ]; then
-              echo "is_prerelease=true" >> $GITHUB_OUTPUT
-              echo "Triggering Dev Pre-Release: $VERSION - $TITLE"
-            else
-              echo "is_prerelease=false" >> $GITHUB_OUTPUT
-              echo "Triggering Official Latest Release: $VERSION - $TITLE"
-            fi
-            ;;
-          *)
-            echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "No release tag detected at the bottom of release_log.md. Just building code."
-            ;;
-        esac
+        # Check if release_log.md was modified in this commit
+        if git diff --name-only HEAD~1 HEAD | grep -q "release_log.md"; then
+          echo "Release log was updated! Checking for tags..."
+          LAST_LINE=$(tail -n 1 release_log.md | xargs)
+          
+          case "$LAST_LINE" in
+            "[official]"*|"[dev]"*)
+              TYPE=$(echo "$LAST_LINE" | cut -d'-' -f1 | tr -d '[]' | xargs)
+              VERSION=$(echo "$LAST_LINE" | cut -d'-' -f2 | xargs)
+              TITLE=$(echo "$LAST_LINE" | cut -d'-' -f3- | xargs)
+              
+              echo "should_release=true" >> $GITHUB_OUTPUT
+              echo "rel_version=$VERSION" >> $GITHUB_OUTPUT
+              echo "rel_title=$TITLE" >> $GITHUB_OUTPUT
+              
+              if [ "$TYPE" = "dev" ]; then
+                echo "is_prerelease=true" >> $GITHUB_OUTPUT
+                echo "Triggering Dev Pre-Release: $VERSION - $TITLE"
+              else
+                echo "is_prerelease=false" >> $GITHUB_OUTPUT
+                echo "Triggering Official Latest Release: $VERSION - $TITLE"
+              fi
+              ;;
+            *)
+              echo "should_release=false" >> $GITHUB_OUTPUT
+              echo "Release log changed, but no valid release tag was found at the bottom."
+              ;;
+          esac
+        else
+          echo "should_release=false" >> $GITHUB_OUTPUT
+          echo "release_log.md was not changed in this commit. Just building code."
+        fi
 
     # 2. Build the main production app
     - name: Build Main App
@@ -94,7 +99,7 @@ jobs:
           Better_FourthTube.3dsx
           test.cia
 
-    # 5. Create GitHub Release (Only if release_log.md has a valid tag at the bottom)
+    # 5. Create GitHub Release (Only if release_log.md was explicitly changed with a tag)
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.log_parser.outputs.should_release == 'true'
