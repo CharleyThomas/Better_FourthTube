@@ -17,21 +17,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # 1. Parse the single-line layout from release_log.md
+    # 1. Parse the single-line layout from the BOTTOM of release_log.md
     - name: Parse Release Log
       id: log_parser
       run: |
-        FIRST_LINE=$(head -n 1 release_log.md | xargs)
+        LAST_LINE=$(tail -n 1 release_log.md | xargs)
         
         # Check if it starts with [official] or [dev]
-        case "$FIRST_LINE" in
+        case "$LAST_LINE" in
           "[official]"*|"[dev]"*)
             # Extract the type (official or dev)
-            TYPE=$(echo "$FIRST_LINE" | cut -d'-' -f1 | tr -d '[]' | xargs)
+            TYPE=$(echo "$LAST_LINE" | cut -d'-' -f1 | tr -d '[]' | xargs)
             # Extract the version (vXX.X.X)
-            VERSION=$(echo "$FIRST_LINE" | cut -d'-' -f2 | xargs)
+            VERSION=$(echo "$LAST_LINE" | cut -d'-' -f2 | xargs)
             # Extract the title
-            TITLE=$(echo "$FIRST_LINE" | cut -d'-' -f3- | xargs)
+            TITLE=$(echo "$LAST_LINE" | cut -d'-' -f3- | xargs)
             
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "rel_version=$VERSION" >> $GITHUB_OUTPUT
@@ -47,7 +47,7 @@ jobs:
             ;;
           *)
             echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "No release tag detected in release_log.md. Just building code."
+            echo "No release tag detected at the bottom of release_log.md. Just building code."
             ;;
         esac
 
@@ -94,7 +94,7 @@ jobs:
           Better_FourthTube.3dsx
           test.cia
 
-    # 5. Create GitHub Release (Only if release_log.md has a valid tag)
+    # 5. Create GitHub Release (Only if release_log.md has a valid tag at the bottom)
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.log_parser.outputs.should_release == 'true'
