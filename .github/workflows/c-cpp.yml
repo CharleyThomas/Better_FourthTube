@@ -100,7 +100,7 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.log_parser.outputs.should_release == 'true'
       with:
         tag_name: ${{ steps.log_parser.outputs.rel_version }}
-        name: "Better_FourthTube ${{ steps.log_parser.outputs.rel_version }} - ${{ steps.log_parser.outputs.rel_title }}"
+        name: "${{ steps.log_parser.outputs.rel_title }}"
         draft: false
         prerelease: ${{ steps.log_parser.outputs.is_prerelease }}
         make_latest: ${{ steps.log_parser.outputs.is_prerelease == 'false' }}
