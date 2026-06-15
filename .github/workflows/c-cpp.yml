@@ -17,23 +17,37 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    # 1. Check if the commit message starts with "release: v"
-    - name: Check for Release Trigger
-      id: check_release
+    # 1. Parse the single-line layout from release_log.md
+    - name: Parse Release Log
+      id: log_parser
       run: |
-        COMMIT_MSG="${{ github.event.head_commit.message }}"
+        FIRST_LINE=$(head -n 1 release_log.md | xargs)
         
-        case "$COMMIT_MSG" in
-          "release: v"*)
-            # Extract just the version number (everything after "release: ")
-            VERSION=$(echo "$COMMIT_MSG" | sed 's/release: //')
+        # Check if it starts with [official] or [dev]
+        case "$FIRST_LINE" in
+          "[official]"*|"[dev]"*)
+            # Extract the type (official or dev)
+            TYPE=$(echo "$FIRST_LINE" | cut -d'-' -f1 | tr -d '[]' | xargs)
+            # Extract the version (vXX.X.X)
+            VERSION=$(echo "$FIRST_LINE" | cut -d'-' -f2 | xargs)
+            # Extract the title
+            TITLE=$(echo "$FIRST_LINE" | cut -d'-' -f3- | xargs)
+            
             echo "should_release=true" >> $GITHUB_OUTPUT
             echo "rel_version=$VERSION" >> $GITHUB_OUTPUT
-            echo "Triggering release for version: $VERSION"
+            echo "rel_title=$TITLE" >> $GITHUB_OUTPUT
+            
+            if [ "$TYPE" = "dev" ]; then
+              echo "is_prerelease=true" >> $GITHUB_OUTPUT
+              echo "Triggering Dev Pre-Release: $VERSION - $TITLE"
+            else
+              echo "is_prerelease=false" >> $GITHUB_OUTPUT
+              echo "Triggering Official Latest Release: $VERSION - $TITLE"
+            fi
             ;;
           *)
             echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "Normal commit. Skipping public release step."
+            echo "No release tag detected in release_log.md. Just building code."
             ;;
         esac
 
@@ -80,15 +94,16 @@ jobs:
           Better_FourthTube.3dsx
           test.cia
 
-    # 5. Create GitHub Pre-Release (Only if commit message matched)
+    # 5. Create GitHub Release (Only if release_log.md has a valid tag)
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.check_release.outputs.should_release == 'true'
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' && steps.log_parser.outputs.should_release == 'true'
       with:
-        tag_name: ${{ steps.check_release.outputs.rel_version }}
-        name: "Better_FourthTube ${{ steps.check_release.outputs.rel_version }}"
+        tag_name: ${{ steps.log_parser.outputs.rel_version }}
+        name: "Better_FourthTube ${{ steps.log_parser.outputs.rel_version }} - ${{ steps.log_parser.outputs.rel_title }}"
         draft: false
-        prerelease: true # Keeps the orange Pre-release label!
+        prerelease: ${{ steps.log_parser.outputs.is_prerelease }}
+        make_latest: ${{ steps.log_parser.outputs.is_prerelease == 'false' }}
         files: |
           Better_FourthTube.cia
           Better_FourthTube.3dsx
