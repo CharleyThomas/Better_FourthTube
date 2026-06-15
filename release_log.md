@@ -1,7 +1,7 @@
 [VERSION]
-v0.0.1
+v0.0.2
 [/VERSION]
 
 [TITLE]
-Dev 0.0.1
+Dev 0.0.2
 [/TITLE]
